@@ -200,7 +200,7 @@ foreach(var i in test)
  */
 
 
-var lists = (people
+var q14 = (people
         .SelectMany(x => x.EatenList)
         .Where(x => x.EatenDate.Month == 8)
         .SelectMany(x => x.Foods)
@@ -213,9 +213,9 @@ var lists = (people
                                         .Sum(x => x.Nutrition.Calories.Value)))).OrderByDescending(x => x.Value).Select(x => x).ToList();
 
 
-foreach(var list in lists)
+foreach(var i in q14)
 {
-    Console.WriteLine(list);
+    Console.WriteLine(i);
 }
 
 
@@ -227,6 +227,25 @@ foreach(var list in lists)
  * 결과는 [B, A]
  * 
  */
+
+var q15 = people.GroupBy(z => z.Name).Select(z => new
+{
+    Name = z.Key,
+    Max = (
+        people
+        .Where(x => x.Name == z.Key)
+        .SelectMany(x => x.EatenList)
+        .Where(x => x.EatenDate.Month == 8)
+        .Select(x => x.Foods
+            .Sum(y => y.Nutrition.Calories.Value)
+        ).Max(x => x)
+    )
+}).OrderByDescending(x => x.Max).Select(x => x).ToList();
+
+foreach(var i in q15)
+{
+    Console.WriteLine($"{i.Name} : {i.Max}");
+}
 
 
 
