@@ -15,28 +15,45 @@ var people = GetPeople();
 /* CWS 初
  * Q1. 서울이의 나이는 몇살인지 구하시오
  */
+var seoulAge = people.Where(x => x.Name.Contains("서울")).Select(x => x.Age).ToList();
 
 
 /* CWS 初
  * Q2. 사람들이 나이가 어린 순서로 정렬해서 출력하시오.
  *     Console.WriteLine({나이});
  */
+var ageOrder = people.OrderBy(x => x.Age).Select(x => x.Age).ToList();
+
+foreach(var i in ageOrder)
+{
+	Console.Write($"{i} - ");
+}
+Console.WriteLine();
 
 
 /*  ljy 初
  * Q3. 여성들의 평균 골격근량을 구하시오
  */
+var femaleSktAvg = people.Where(x => x.Gender == "Female").Average(x => x.SkeletalMuscleMass.Value);
 
 
 /* CJS 初
  * Q4. 남성들의 단백질량 평균을 구하시오
  */
+var maleProAvg = people.Where(x => x.Gender == "Male").Average(x => x.Protein.Value);
 
 
 /* KSH 初
  * Q5. BMI 가 21 이상인 수치의 사람들 구해서 출력하시오  (아래 만들어진 CalcBMI 함수를 이용)
  *     Console.WriteLine($"{이름}의 BMI는 {CalcBMI(x, y)}입니다. 체중관리에 신경쓰셔야겠네요");
  */
+var overBMI = people.Where(x => CalcBMI(x.Height.Value, x.Weight.Value) >= 21)
+                .Select(x => new {x.Name, BMI = CalcBMI(x.Height.Value, x.Weight.Value)}).ToList();
+
+foreach(var i in overBMI)
+{
+	Console.WriteLine($"{i.Name}의 BMI는 {i.BMI}입니다. 체중관리에 신경쓰셔야겠네요");
+}
 
 double CalcBMI(double height, double weight)
 {
@@ -47,6 +64,9 @@ double CalcBMI(double height, double weight)
 /* LJY 中
  * Q6. 몸무게가 50이상인 사람들이 먹은 음식중에 최고칼로리를 구하시오
  */
+var maxCal = people.Where(x => x.Weight.Value >= 50)
+			.SelectMany(x => x.EatenList).SelectMany(x => x.Foods)
+			.Select(x => x.Nutrition.Calories.Value).Max(x => x);
 
 
 /* CWS 中
@@ -54,23 +74,49 @@ double CalcBMI(double height, double weight)
  *     (이 때, 체지방률 식은 BodyFatMass / Weight * 100)
  *      Console.WriteLine($"{이름}: {체지방률}"); 같은 형식으로 출력
  */
+var bodyFatList = people.Where(x => (x.BodyFatMass.Value / x.Weight.Value * 100) <= 15)
+                .Select(x => new { x.Name, BodyFat = (x.BodyFatMass.Value / x.Weight.Value * 100) }).ToList();
 
+foreach(var i in bodyFatList)
+{
+	Console.WriteLine($"{i.Name}: {i.BodyFat}");
+}
 
 /* LJY 中
  * Q8. 나이가 30대인 사람들의 전체 기간 평균 칼로리 섭취량을 구하시오
  */
+ var avgCal = people.Where(x => x.Age >= 30).SelectMany(x => x.EatenList).SelectMany(x => x.Foods)
+                .Average(x => x.Nutrition.Calories.Value);
 
 
 /* KSH 中
  * Q9. 섭취한 음식의 총 칼로리의 높은 순서대로 사람들을 나열해서 출력해주세요
  *      Console.WriteLine($"{이름}은 {총칼로리}를 먹었습니다");
  */
+ var orderCal = people
+		.GroupBy(x => new { x.Name, Calories = (people.Where(y => y.Name == x.Name).SelectMany(y => y.EatenList).SelectMany(y => y.Foods)
+		.Sum(y => y.Nutrition.Calories.Value)) })
+		.OrderByDescending(x => x.Key.Calories).Select(x => x.Key);
+
+foreach(var i in orderCal)
+{
+	Console.WriteLine($"{i.Name}은 {i.Calories}를 먹었습니다.");
+}
 
 
 /*  CJS 中
  * Q10. 2022.08.13일에 모든사람의 먹은 음식을 나열하고 겹치는 음식은 없도록 하시오 
  *      (EatenDictByDate를 사용하지 않고 EatenList를 사용하여 구하시오)    
  */
+ var foods = people.SelectMany(x => x.EatenList).Where(x => x.EatenDate.CompareTo(new DateTime(2022, 8, 13)) == 0)
+	.SelectMany(x => x.Foods).Distinct().Select(x => x.Name);
+
+foreach(var i in foods)
+{
+	Console.Write(i + ",");
+}
+
+Console.WriteLine();
 
 
 /* KSH 高
