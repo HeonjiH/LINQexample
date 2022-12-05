@@ -1,5 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using LinqTest;
+using System.Security.Cryptography.X509Certificates;
 
 Console.WriteLine("Hello, World!");
 
@@ -15,7 +16,9 @@ var people = GetPeople();
 /* CWS 初
  * Q1. 서울이의 나이는 몇살인지 구하시오
  */
-var seoulAge = people.Where(x => x.Name.Contains("서울")).Select(x => x.Age).ToList();
+var seoulAge = people
+    .Where(x => x.Name.Contains("서울"))
+    .Select(x => x.Age).ToList();
 
 
 /* CWS 初
@@ -26,9 +29,8 @@ var ageOrder = people.OrderBy(x => x.Age).Select(x => x.Age).ToList();
 
 foreach(var i in ageOrder)
 {
-	Console.Write($"{i} - ");
+    Console.WriteLine($"{i}");
 }
-Console.WriteLine();
 
 
 /*  ljy 初
@@ -88,12 +90,20 @@ foreach(var i in bodyFatList)
  var avgCal = people.Where(x => x.Age >= 30).SelectMany(x => x.EatenList).SelectMany(x => x.Foods)
                 .Average(x => x.Nutrition.Calories.Value);
 
+/*var avgCal2 = people.Where(x => x.Age >= 30).Select(x => x.EatenDictByDate
+    .Select(f => f.Value.Average(c => c.Nutrition.Calories.Value)).ToList()).ToList();
+
+foreach(var i in avgCal2)
+{
+    Console.WriteLine(i);
+}*/
+
 
 /* KSH 中
  * Q9. 섭취한 음식의 총 칼로리의 높은 순서대로 사람들을 나열해서 출력해주세요
  *      Console.WriteLine($"{이름}은 {총칼로리}를 먹었습니다");
  */
- var orderCal = people
+var orderCal = people
 		.GroupBy(x => new { x.Name, Calories = (people.Where(y => y.Name == x.Name).SelectMany(y => y.EatenList).SelectMany(y => y.Foods)
 		.Sum(y => y.Nutrition.Calories.Value)) })
 		.OrderByDescending(x => x.Key.Calories).Select(x => x.Key);
@@ -133,6 +143,19 @@ Console.WriteLine();
  * Q12. 24일에 소비된 음식과 28일에 소비된 음식 중 더 칼로리가 소비된 날의 칼로리의 합을 구하시오 
  *      (EatenList를 사용하지 않고 EatenDictByDate를 사용하여 구하시오)
  */
+var calSum = people
+    .Select(x => x.EatenDictByDate
+        .Where(k => k.Key.Day == 24)
+        .SelectMany(c => c.Value)
+        .Sum(y => y.Nutrition.Calories.Value)).Sum(x => x);
+
+var calSum2 = people
+    .Select(x => x.EatenDictByDate
+        .Where(k => k.Key.Day == 28)
+        .SelectMany(c => c.Value)
+        .Sum(y => y.Nutrition.Calories.Value)).Sum(x => x);
+
+
 
 /* KMJ 中
  * Q13. BMI는 몸무게(kg)을 키(m)의 제곱으로 나눠 계산합니다. (171cm, 60kg 일경우 60 / (1.71 * 1.71)으로 계산)
@@ -147,6 +170,23 @@ Console.WriteLine();
  * 박사울 : Male : 23.729018234512736
  */
 
+var test = people
+    .Select(x => new {
+        x.Name,
+        Dic = (people.Where(y => y.Name == x.Name).ToDictionary(y => y.Gender, y => CalcBMI(x.Height.Value, x.Weight.Value)))
+    }).ToList();
+
+foreach(var i in test)
+{
+    Console.Write($"{i.Name} : ");
+    
+    foreach(var j in i.Dic)
+    {
+        Console.WriteLine(j);
+    }
+}
+
+
 /* KMJ 高
  * Q14. 8월 한 달 중에 사람들을 가장 많이 살찌운 음식을 찾아보려 합니다.
  * A가 8월 1일에 달걀, 달걀, 우유를 먹었고
@@ -160,13 +200,34 @@ Console.WriteLine();
  */
 
 
+var lists = (people
+        .SelectMany(x => x.EatenList)
+        .Where(x => x.EatenDate.Month == 8)
+        .SelectMany(x => x.Foods)
+        .GroupBy(x => x.Name)
+        .ToDictionary(y => y.Key, y => (people
+                                        .SelectMany(x => x.EatenList)
+                                        .Where(x => x.EatenDate.Month == 8)
+                                        .SelectMany(x => x.Foods)
+                                        .Where(x => x.Name == y.Key)
+                                        .Sum(x => x.Nutrition.Calories.Value)))).OrderByDescending(x => x.Value).Select(x => x).ToList();
+
+
+foreach(var list in lists)
+{
+    Console.WriteLine(list);
+}
+
+
+
+
 /* KMJ 高
  * Q15. 8월 중에서, 하루에 섭취한 음식들의 칼로리 합계의 개인별 최대값을 기준으로 사람들을 내림차순으로 정렬하세요.
  * ex) A가 8월 1일에 300, 8월 5일에 600, B가 8월 3일에 100, 8월 10일에 900 칼로리 섭취했으면
  * 결과는 [B, A]
  * 
  */
-*/
+
 
 
 var doIt = "위에 문제를 푸는데에 있어 이 asdf 변수가 없으면 컴파일에 문제가 생겨 마우스를 올려 놓아도 타입을 알 수 없으니, 지우지 마시길 권합니다.";
