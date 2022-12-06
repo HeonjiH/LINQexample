@@ -96,9 +96,16 @@ foreach(var i in q7)
  *      Console.WriteLine($"{이름}은 {총칼로리}를 먹었습니다");
  */
 var q9 = people
-		.GroupBy(x => new { x.Name, Calories = (people.Where(y => y.Name == x.Name).SelectMany(y => y.EatenList).SelectMany(y => y.Foods)
-		.Sum(y => y.Nutrition.Calories.Value)) })
-		.OrderByDescending(x => x.Key.Calories).Select(x => x.Key);
+		.GroupBy(x => new { 
+            x.Name, 
+            Calories = (people
+                .Where(y => y.Name == x.Name)
+                .SelectMany(y => y.EatenList)
+                .SelectMany(y => y.Foods)
+		        .Sum(y => y.Nutrition.Calories.Value)) 
+        })
+		.OrderByDescending(x => x.Key.Calories)
+        .Select(x => x.Key);
 
 foreach(var i in q9)
 {
@@ -110,8 +117,12 @@ foreach(var i in q9)
  * Q10. 2022.08.13일에 모든사람의 먹은 음식을 나열하고 겹치는 음식은 없도록 하시오 
  *      (EatenDictByDate를 사용하지 않고 EatenList를 사용하여 구하시오)    
  */
- var q10 = people.SelectMany(x => x.EatenList).Where(x => x.EatenDate.CompareTo(new DateTime(2022, 8, 13)) == 0)
-	.SelectMany(x => x.Foods).Distinct().Select(x => x.Name);
+ var q10 = people
+    .SelectMany(x => x.EatenList)
+    .Where(x => x.EatenDate.CompareTo(new DateTime(2022, 8, 13)) == 0)
+	.SelectMany(x => x.Foods)
+    .Distinct()
+    .Select(x => x.Name);
 
 foreach(var i in q10)
 {
@@ -138,11 +149,15 @@ Console.WriteLine();
 
 List<int> days = new List<int> { 24, 28 };
 
-var q12 = days.GroupBy(x => x).Select(x => (
-    people.Select(y => y.EatenDictByDate
+var q12 = days
+    .GroupBy(x => x)
+    .Select(x => (
+        people
+        .Select(y => y.EatenDictByDate
         .Where(date => date.Key.Day == x.Key)
         .SelectMany(foods => foods.Value)
-        .Sum(foods => foods.Nutrition.Calories.Value)).Sum(calories => calories)
+        .Sum(foods => foods.Nutrition.Calories.Value))
+        .Sum(calories => calories)
 )).Max(x => x);
 
 
@@ -162,24 +177,21 @@ var q12 = days.GroupBy(x => x).Select(x => (
 var q13 = people
     .Select(x => new {
         x.Name,
-        Dic = (people.Where(y => y.Name == x.Name).ToDictionary(y => y.Gender, y => CalcBMI(x.Height.Value, x.Weight.Value)))
+        Dic = (people
+                .Where(y => y.Name == x.Name)
+                .ToDictionary(y => y.Gender, y => CalcBMI(x.Height.Value, x.Weight.Value)).First())
     }).ToList();
 
 foreach(var i in q13)
 {
-    Console.Write($"{i.Name} : ");
-    
-    foreach(var j in i.Dic)
-    {
-        Console.WriteLine(j);
-    }
+    Console.WriteLine($"{i.Name} : {i.Dic.Key} : {i.Dic.Value}");
 }
 
 
 /* KMJ 高
  * Q14. 8월 한 달 중에 사람들을 가장 많이 살찌운 음식을 찾아보려 합니다.
  * A가 8월 1일에 달걀, 달걀, 우유를 먹었고
- * 8월 2일에 우유, 달걀, 대추토마토를 먹었고
+ * 8월 2일에 우유, 달걀, 대추토마토를 먹었고s
  * B가 8월 3일에 우유, 대추토마토, 달걀을 먹었다고 하면
  * 전체적으로 달걀은 4번 나왔고 칼로리로는 74 * 4 = 296
  * 우유는 3번 나왔고 칼로리는 62 * 3 = 186
@@ -188,27 +200,32 @@ foreach(var i in q13)
  * 칼로리가 높은 (value가 큰) 순서대로 정렬되도록 LINQ로 구성해보세요.
  */
 
+var q14 = people.SelectMany(x => x.EatenList).Where(x => x.EatenDate.Month == 8).SelectMany(x => x.Foods)
+    .GroupBy(x => x.Name).Select(x => new
+    {
+        Name = x.Key,
+        Calorie = (
+            people.SelectMany(y => y.EatenList)
+            .SelectMany(y => y.Foods)
+            .Where(y => y.Name == x.Key)
+            .Select(y => y.Nutrition.Calories.Value).First()
+        ),
+        Calories = (
+            people.SelectMany(y => y.EatenList)
+            .SelectMany(y => y.Foods)
+            .Where(y => y.Name == x.Key)
+            .Sum(x => x.Nutrition.Calories.Value)
+        )
+    })
+    .OrderByDescending(x => x.Calories)
+    .ToDictionary(x => x.Name, x => x.Calorie);
 
-var q14 = (people
-        .SelectMany(x => x.EatenList)
-        .Where(x => x.EatenDate.Month == 8)
-        .SelectMany(x => x.Foods)
-        .GroupBy(x => x.Name)
-        .ToDictionary(y => y.Key, y => (people
-                                        .SelectMany(x => x.EatenList)
-                                        .Where(x => x.EatenDate.Month == 8)
-                                        .SelectMany(x => x.Foods)
-                                        .Where(x => x.Name == y.Key)
-                                        .Sum(x => x.Nutrition.Calories.Value)))).OrderByDescending(x => x.Value).Select(x => x).ToList();
-
-
+Console.WriteLine();
 foreach(var i in q14)
 {
-    Console.WriteLine(i);
+    Console.WriteLine($"{i}");
 }
-
-
-
+Console.WriteLine();
 
 /* KMJ 高
  * Q15. 8월 중에서, 하루에 섭취한 음식들의 칼로리 합계의 개인별 최대값을 기준으로 사람들을 내림차순으로 정렬하세요.
@@ -217,25 +234,26 @@ foreach(var i in q14)
  * 
  */
 
-var q15 = people.GroupBy(z => z.Name).Select(z => new
-{
-    Name = z.Key,
-    Max = (
-        people
-        .Where(x => x.Name == z.Key)
-        .SelectMany(x => x.EatenList)
-        .Where(x => x.EatenDate.Month == 8)
-        .Select(x => x.Foods
-            .Sum(y => y.Nutrition.Calories.Value)
-        ).Max(x => x)
-    )
-}).OrderByDescending(x => x.Max).Select(x => x).ToList();
+var q15 = people
+    .GroupBy(z => z.Name)
+    .Select(z => new
+    {
+        Name = z.Key,
+        Max = (
+            people
+            .Where(x => x.Name == z.Key)
+            .SelectMany(x => x.EatenList)
+            .Where(x => x.EatenDate.Month == 8)
+            .Select(x => x.Foods
+                .Sum(calorie => calorie.Nutrition.Calories.Value)
+            ).Max(x => x)
+        )
+    }).OrderByDescending(x => x.Max).Select(x => x.Name).ToList();
 
 foreach(var i in q15)
 {
-    Console.WriteLine($"{i.Name} : {i.Max}");
+    Console.WriteLine($"{i}");
 }
-
 
 
 var doIt = "위에 문제를 푸는데에 있어 이 asdf 변수가 없으면 컴파일에 문제가 생겨 마우스를 올려 놓아도 타입을 알 수 없으니, 지우지 마시길 권합니다.";
@@ -289,13 +307,13 @@ List<Person> GetPeople()
         Protein = new() { Unit = "kg", Value = 7.7 },
         EatenDictByDate = new()
         {
-            { new DateTime(2022, 08, 01), new(){ foods[01], foods[08], foods[23] } },
-            { new DateTime(2022, 08, 03), new(){ foods[07], foods[15], foods[03] } },
-            { new DateTime(2022, 08, 04), new(){ foods[08], foods[22], foods[04] } },
-            { new DateTime(2022, 08, 08), new(){ foods[14], foods[09], foods[11] } },
-            { new DateTime(2022, 08, 17), new(){ foods[15], foods[18], foods[12] } },
-            { new DateTime(2022, 08, 24), new(){ foods[20], foods[23], foods[21] } },
-            { new DateTime(2022, 08, 28), new(){ foods[23], foods[06], foods[07] } },
+            { new DateTime(2022, 08, 01), new(){ foods[0], foods[6], foods[20] } },
+            { new DateTime(2022, 08, 03), new(){ foods[6], foods[14], foods[3] } },
+            { new DateTime(2022, 08, 04), new(){ foods[08], foods[18], foods[04] } },
+            { new DateTime(2022, 08, 08), new(){ foods[10], foods[22], foods[8] } },
+            { new DateTime(2022, 08, 17), new(){ foods[12], foods[6], foods[9] } },
+            { new DateTime(2022, 08, 24), new(){ foods[14], foods[3], foods[12] } },
+            { new DateTime(2022, 08, 28), new(){ foods[16], foods[9], foods[15] } },
         },
         EatenList = new()
         {
