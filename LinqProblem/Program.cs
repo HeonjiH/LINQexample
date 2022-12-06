@@ -131,13 +131,7 @@ var q10 = people
     .Distinct()
     .Select(x => x.Name).ToList();
 
-foreach(var i in q10)
-{
-	Console.Write(i + ",");
-}
-
-Console.WriteLine("\n");
-
+Console.WriteLine(string.Join(", ", q10) + "\n");
 
 /* KSH 高
  * TODO 문제 바꾸어야함 아직 풀지 말아주세요.
