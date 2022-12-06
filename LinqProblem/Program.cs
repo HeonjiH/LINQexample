@@ -127,9 +127,9 @@ Console.WriteLine();
 var q10 = people
     .SelectMany(x => x.EatenList)
     .Where(x => x.EatenDate.CompareTo(new DateTime(2022, 8, 13)) == 0)
-	.SelectMany(x => x.Foods)
+    .SelectMany(x => x.Foods)
     .Distinct()
-    .Select(x => x.Name);
+    .Select(x => x.Name).ToList();
 
 foreach(var i in q10)
 {
