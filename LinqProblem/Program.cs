@@ -20,6 +20,11 @@ var q1 = people
     .Where(x => x.Name.Contains("서울"))
     .Select(x => x.Age).ToList();
 
+foreach(var i in q1)
+{
+    Console.WriteLine(i);
+}
+Console.WriteLine("");
 
 /* CWS 初
  * Q2. 사람들이 나이가 어린 순서로 정렬해서 출력하시오.
@@ -31,19 +36,19 @@ foreach(var i in q2)
 {
     Console.WriteLine($"{i}");
 }
-
+Console.WriteLine("");
 
 /*  ljy 初
  * Q3. 여성들의 평균 골격근량을 구하시오
  */
 var q3 = people.Where(x => x.Gender == "Female").Average(x => x.SkeletalMuscleMass.Value);
-
+Console.WriteLine($"{q3}\n");
 
 /* CJS 初
  * Q4. 남성들의 단백질량 평균을 구하시오
  */
 var q4 = people.Where(x => x.Gender == "Male").Average(x => x.Protein.Value);
-
+Console.WriteLine($"{q4}\n");
 
 /* KSH 初
  * Q5. BMI 가 21 이상인 수치의 사람들 구해서 출력하시오  (아래 만들어진 CalcBMI 함수를 이용)
@@ -62,13 +67,14 @@ double CalcBMI(double height, double weight)
     return weight / Math.Pow(height / 100, 2);
 }
 
-
+Console.WriteLine();
 /* LJY 中
  * Q6. 몸무게가 50이상인 사람들이 먹은 음식중에 최고칼로리를 구하시오
  */
 var q6 = people.Where(x => x.Weight.Value >= 50)
 			.SelectMany(x => x.EatenList).SelectMany(x => x.Foods)
 			.Select(x => x.Nutrition.Calories.Value).Max(x => x);
+Console.WriteLine($"{q6}\n");
 
 
 /* CWS 中
@@ -84,13 +90,14 @@ foreach(var i in q7)
 	Console.WriteLine($"{i.Name}: {i.BodyFat}");
 }
 
+Console.WriteLine();
 /* LJY 中
  * Q8. 나이가 30대인 사람들의 전체 기간 평균 칼로리 섭취량을 구하시오
  */
- var q8 = people.Where(x => x.Age >= 30).SelectMany(x => x.EatenList).SelectMany(x => x.Foods)
+var q8 = people.Where(x => x.Age >= 30).SelectMany(x => x.EatenList).SelectMany(x => x.Foods)
                 .Average(x => x.Nutrition.Calories.Value);
 
-
+Console.WriteLine($"{q8}\n");
 /* KSH 中
  * Q9. 섭취한 음식의 총 칼로리의 높은 순서대로 사람들을 나열해서 출력해주세요
  *      Console.WriteLine($"{이름}은 {총칼로리}를 먹었습니다");
@@ -112,12 +119,12 @@ foreach(var i in q9)
 	Console.WriteLine($"{i.Name}은 {i.Calories}를 먹었습니다.");
 }
 
-
+Console.WriteLine();
 /*  CJS 中
  * Q10. 2022.08.13일에 모든사람의 먹은 음식을 나열하고 겹치는 음식은 없도록 하시오 
  *      (EatenDictByDate를 사용하지 않고 EatenList를 사용하여 구하시오)    
  */
- var q10 = people
+var q10 = people
     .SelectMany(x => x.EatenList)
     .Where(x => x.EatenDate.CompareTo(new DateTime(2022, 8, 13)) == 0)
 	.SelectMany(x => x.Foods)
@@ -129,7 +136,7 @@ foreach(var i in q10)
 	Console.Write(i + ",");
 }
 
-Console.WriteLine();
+Console.WriteLine("\n");
 
 
 /* KSH 高
@@ -160,7 +167,7 @@ var q12 = days
         .Sum(calories => calories)
 )).Max(x => x);
 
-
+Console.WriteLine($"{q12}\n");
 /* KMJ 中
  * Q13. BMI는 몸무게(kg)을 키(m)의 제곱으로 나눠 계산합니다. (171cm, 60kg 일경우 60 / (1.71 * 1.71)으로 계산)
  *  남자들의 평균 BMI, 여자들의 평균 BMI를 계산해서
